@@ -1,0 +1,13 @@
+# Virtural Env
+Venv
+Venv/*
+
+# Database
+*.sqlite
+
+# Cache/Config
+__pycache__
+.vscode
+
+# Other
+test.py
