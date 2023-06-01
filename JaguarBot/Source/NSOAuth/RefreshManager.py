@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
 from time import time
 
-from Database.Models import User, TokenType, FindAbstractor
+from Database.Models import User, TokenType
+from Database.Ext import FindAbstractor
 from NSOAuth.VersionManager import VersionManager
 from NSOAuth.TokenManager import TokenManager, Status
 from Config import EXP_OFFSET

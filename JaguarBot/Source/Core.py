@@ -7,12 +7,14 @@ import Config
 import CommandTree
 from Helpers.Logger import Logger
 from NSOAuth.VersionManager import VersionManager
+from Database.Models import Base
 
 
 def main():
 
     # Depends on CWD, run from 'Source' folder.
     engine = create_engine(f"sqlite:///{Config.DATABASE_PATH}/{Config.DATABASE_NAME}")
+    Base.metadata.create_all(engine)
     
     logger = Logger("Core")
     bot = discord.Bot()

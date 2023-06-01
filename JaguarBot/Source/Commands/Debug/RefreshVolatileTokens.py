@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from time import time
 
 from Commands.Interfaces.ICommand import ICommand
-from Database.Models import FindAbstractor, TokenType
+from Database.Models import TokenType
+from Database.Ext import FindAbstractor
 from Helpers.Logger import Logger
 from NSOAuth.RefreshManager import RefreshManager
 from Config import INFO_EMBED_COLOR

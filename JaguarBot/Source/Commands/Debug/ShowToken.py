@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from time import time
 
 from Commands.Interfaces.ICommand import ICommand
-from Database.Models import FindAbstractor, TokenType
+from Database.Models import TokenType
+from Database.Ext import FindAbstractor
 from Config import INFO_EMBED_COLOR
 
 class ShowToken(ICommand):

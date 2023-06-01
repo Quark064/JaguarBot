@@ -5,6 +5,8 @@ from Commands.Debug.Status import Status
 from Commands.Debug.RefreshVolatileTokens import RefreshVolatileTokens
 from Commands.Debug.ShowToken import ShowToken
 
+from Commands.SplatNet3.OnlineFriends import OnlineFriends
+
 
 # Define commands independent of a group.
 INDEPENDENT = []
@@ -20,5 +22,10 @@ GROUPS = {
         "description": "Manage NSO Authentication.",
         "guilds": [920851074116636692, 443128138331979776],
         "commands": [Login]
+    },
+    "s3": {
+        "description": "Interact with SplatNet3",
+        "guilds": [920851074116636692, 443128138331979776],
+        "commands": [OnlineFriends]
     }
 }

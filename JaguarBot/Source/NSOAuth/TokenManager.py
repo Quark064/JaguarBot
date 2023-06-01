@@ -188,7 +188,7 @@ class TokenManager:
     async def generateGToken(self, sessionToken: str) -> StringResult:
         """ Generate a GToken given a valid session token. """
 
-        ninUserInfo = self.__getNintendoUserInfo(sessionToken)
+        ninUserInfo = await self.getNintendoUserInfo(sessionToken)
 
         res = ninUserInfo.result
         if res.status != Status.OK:
@@ -206,7 +206,7 @@ class TokenManager:
     async def generateBulletToken(self, sessionToken: str, gToken: str) -> StringResult:
         """ Using the VersionInfo, the Session Token, and a GToken, get a Bullet Token. """
         
-        ninUserInfo = self.__getNintendoUserInfo(sessionToken)
+        ninUserInfo = await self.getNintendoUserInfo(sessionToken)
 
         res = ninUserInfo.result
         if res.status != Status.OK:
@@ -215,10 +215,8 @@ class TokenManager:
         return self.__getBulletToken(ninUserInfo, gToken)
         
 
-
-    # Private Helper Methods ----
     @staticmethod
-    def __getNintendoUserInfo(sessionToken: str) -> NinUserResult:
+    async def getNintendoUserInfo(sessionToken: str) -> NinUserResult:
         """ Request a user's information with their Session Token. """
 
         ninUser = NinUserResult()
@@ -281,6 +279,7 @@ class TokenManager:
         return ninUser.statusOK()
 
 
+    # Private Helper Methods ----
     def __generateFToken(self, fStep: int, idToken: str, accountID: str|None = None, coralID: str|None = None) -> FToken:
         """ Reach out to the fAPI and request an 'f' token.
         

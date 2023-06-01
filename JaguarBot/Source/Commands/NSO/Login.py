@@ -85,6 +85,8 @@ class Login(ICommand):
                     await ctx.author.send("An unknown error occurred. Please try again later.")
                     return
         
+        userInfo = await tkManager.getNintendoUserInfo(sessionToken.value)
+        
         await loginMsg.edit(content="Attempting authentication with SplatNet3...")
 
         gToken = await tkManager.generateGToken(sessionToken.value)
@@ -96,7 +98,7 @@ class Login(ICommand):
             return
 
         bulletToken = await tkManager.generateBulletToken(sessionToken.value, gToken.value)
-        bulletTokenExp = int(time()) + EXP_OFFSET.GTOKEN
+        bulletTokenExp = int(time()) + EXP_OFFSET.BULLET
 
         if bulletToken.result.status != Status.OK:
             await ctx.author.send(f"Something went wrong: {bulletToken.result.message}")
@@ -106,7 +108,7 @@ class Login(ICommand):
 
         # Add New Info to DataBase ------
         with Session(dbEngine) as dbSession:
-            newUser = dbUser(discordID=ctx.author.id)
+            newUser = dbUser(discordID=ctx.author.id, language=userInfo.language, country=userInfo.country)
 
             newSToken = Token(user=newUser, type=TokenType.SESSION,  value=sessionToken.value, expiresAt=sessionExp)
             newGToken = Token(user=newUser, type=TokenType.GAME_WEB, value=gToken.value,       expiresAt=gTokenExp)

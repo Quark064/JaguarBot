@@ -1,8 +1,10 @@
-from Database.Models import AppVersion
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 import requests, json
 from dataclasses import dataclass
+
+from Database.Models import AppVersion, GraphQLQuery
+from Database.Ext import getOrCreate
 
 @dataclass
 class VersionInfo:
@@ -26,12 +28,9 @@ class VersionManager:
     
 
     def getAppVersions(self) -> VersionInfo:
-        """ Return a VersionInfo with the """
+        """ Return a VersionInfo with NSO and S3 versions from the database."""
         return VersionInfo(self.__nsoVersion(), self.__s3Version())
 
-    def getGQLHashes(self) -> dict:
-        """ Return a dict of GraphQL Hashes. """
-        return json.loads(self.__gqlVersion())
 
     def updateVersions(self) -> bool:
         """ Attempts to update the app versions from hosted API. """
@@ -43,26 +42,20 @@ class VersionManager:
             s3Version = json.loads(result.text)["web_app_ver"]
 
             result = requests.get(self.GQL_UPDATE_URL)
-            gqlHashes = str(json.loads(result.text)["graphql"]["hash_map"])
+            gqlHashes = json.loads(result.text)["graphql"]["hash_map"]
         except Exception:
             return False
         else:
-            nsoEntry = self.__getEntry(self.NSO_VALUE_NAME)
-            s3Entry  = self.__getEntry(self.S3_VALUE_NAME)
-            gqlEntry = self.__getEntry(self.GQL_VALUE_NAME)
-
-            nsoEntry.version = nsoVersion
-            s3Entry.version  = s3Version
-            gqlEntry.version = gqlHashes
+            self.__getEntry(self.NSO_VALUE_NAME).version = nsoVersion
+            self.__getEntry(self.S3_VALUE_NAME).version  = s3Version
             
+            for name, hash in gqlHashes.items():
+                self.__getHashObj(name).hash = hash
+
             self.dbSession.commit()
 
             return True
-    
 
-    def __gqlVersion(self) -> str:
-        """ Return a JSON of GraphQL Hashes from the DB."""
-        return self.__getEntry(self.GQL_VALUE_NAME).version
 
     def __s3Version(self) -> str:
         """ Return the S3 Applet version stored in the DB. """
@@ -72,11 +65,11 @@ class VersionManager:
         """ Return the NSO App Version Stored in the DB. """
         return self.__getEntry(self.NSO_VALUE_NAME).version
 
-    def __getEntry(self, value: str) -> AppVersion:
+    def __getEntry(self, name: str) -> AppVersion:
         """ Internal helper method to retrieve AppVersion objects. """
-        stmt = select(AppVersion).where(AppVersion.name==value)
-        return self.dbSession.scalars(stmt).one()
-
-
-            
+        return getOrCreate(self.dbSession, AppVersion, name=name)
+    
+    def __getHashObj(self, name: str) -> GraphQLQuery:
+        """ Internal helper method to retrieve AppVersion objects. """
+        return getOrCreate(self.dbSession, GraphQLQuery, name=name)
 

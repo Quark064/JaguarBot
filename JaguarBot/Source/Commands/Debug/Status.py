@@ -3,7 +3,7 @@ from discord import Embed, Colour, EmbedField
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
-from Database.Models import User, Token, AppVersion
+from Database.Models import User, Token, AppVersion, GraphQLQuery
 from Commands.Interfaces.ICommand import ICommand
 
 
@@ -23,7 +23,7 @@ class Status(ICommand):
     async def run(ctx: ApplicationContext, bot: Bot, dbEngine: Engine):
         with Session(dbEngine) as session:
 
-            dbObjects = [User, Token, AppVersion]
+            dbObjects = [User, Token, AppVersion, GraphQLQuery]
 
             fieldList = []
             fieldList.append(EmbedField("Latency", f"```Running at {round(bot.latency*1000)}ms```"))
