@@ -151,6 +151,27 @@ class AppVersion(Base):
         return f"<AppVersion {self.id}: {self.name}>"
 
 
+class FindAbstractor:
+    """ Handles common queries. """
+    
+    def __init__(self, session: Session) -> None:
+        self.dbSession = session
+
+    def getToken(self, user: User, tokenType: TokenType) -> Token:
+        """ Given a User, find the corresponding token. """
+
+        stmt = select(Token).where(Token.userID == user.id).where(Token.type == tokenType)
+        return self.dbSession.scalars(stmt).one()
+    
+    def getUserFromDID(self, discordID: int) -> User|None:
+        """ Given a Discord ID, returns a User. """
+        stmt = select(User).where(User.discordID == discordID)
+        try:
+            return self.dbSession.scalars(stmt).one()
+        except Exception:
+            return None
+
+
 def generateDefaults(engine):
     Base.metadata.create_all(engine) 
     with Session(engine) as session:

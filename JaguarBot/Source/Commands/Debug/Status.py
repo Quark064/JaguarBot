@@ -1,4 +1,5 @@
 from discord import Bot, ApplicationContext, SlashCommandGroup
+from discord import Embed, Colour, EmbedField
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
@@ -7,7 +8,7 @@ from Commands.Interfaces.ICommand import ICommand
 
 
 class Status(ICommand):
-    """ A Hello World to ensure the bot is operational. """
+    """ Request the database and network status of the bot. """
 
     @staticmethod
     def register(botInst: Bot, db: Engine, group: SlashCommandGroup|None = None) -> None:
@@ -21,12 +22,19 @@ class Status(ICommand):
     @staticmethod
     async def run(ctx: ApplicationContext, bot: Bot, dbEngine: Engine):
         with Session(dbEngine) as session:
-            msg = ["**WOLF-BOT** *Jaguar rev.*"]
+
+            dbObjects = [User, Token, AppVersion]
+
+            fieldList = []
+            fieldList.append(EmbedField("Latency", f"```Running at {round(bot.latency*1000)}ms```"))
+
+            for object in dbObjects:
+                fieldList.append(EmbedField(f"{object.__name__} Rows", f"```{len(session.query(object).all())}```", inline=True))
+
+            outEmbed = Embed(
+                title="**Bot Status:** Jaguar.ink",
+                color=Colour.from_rgb(0, 255, 255),
+                fields=fieldList
+            )
             
-            msg.append(f"\t• Running at {round(bot.latency*1000)}ms.")
-            msg.append("\t• Database Status:")
-            msg.append(f"\t\t| User: {len(session.query(User).all())} rows.")
-            msg.append(f"\t\t| Token: {len(session.query(Token).all())} rows.")
-            msg.append(f"\t\t| AppVersion: {len(session.query(AppVersion).all())} rows.")
-            
-            await ctx.respond("\n".join(msg))
+            await ctx.respond(embed=outEmbed)

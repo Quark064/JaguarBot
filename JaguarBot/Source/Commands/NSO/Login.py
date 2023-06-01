@@ -13,11 +13,8 @@ from NSOAuth.VersionManager import VersionManager
 from Database.Models import User as dbUser
 from Database.Models import Token, TokenType
 from NSOAuth.TokenManager import *
-
-class EXP_OFFSET:
-    SESSION = 63072000
-    GTOKEN  = 21600
-    BULLET  = 7000
+from Helpers.Logger import Logger
+from Config import EXP_OFFSET
 
 class Login(ICommand):
     """ Login to provide access to NSO services. """
@@ -49,6 +46,7 @@ class Login(ICommand):
         if not ctx.author.can_send():
             await ctx.respond("You must have DM permissions enabled to log in.", ephemeral=True, delete_after=8)
         
+        logger = Logger("Login")
 
         # Begin DM Login Process ------
         if type(ctx.channel) != DMChannel:
@@ -94,6 +92,7 @@ class Login(ICommand):
         
         if gToken.result.status != Status.OK:
             await ctx.author.send(f"Something went wrong: {gToken.result.message}")
+            logger.warn(f"Failed to generate GameWeb Token for User {ctx.author.id}.")
             return
 
         bulletToken = await tkManager.generateBulletToken(sessionToken.value, gToken.value)
@@ -101,6 +100,7 @@ class Login(ICommand):
 
         if bulletToken.result.status != Status.OK:
             await ctx.author.send(f"Something went wrong: {bulletToken.result.message}")
+            logger.warn(f"Failed to generate Bullet Token for User {ctx.author.id}.")
             return
 
 
@@ -115,5 +115,6 @@ class Login(ICommand):
             dbSession.add_all([newUser, newSToken, newGToken, newBToken])
             dbSession.commit()
 
+        logger.log(f"Created new user credentials for User {ctx.author.id}.")
         await ctx.author.send("Successfully authenticated! You can now use SplatNet3 commands.")
         await loginMsg.delete()

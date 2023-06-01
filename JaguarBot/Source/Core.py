@@ -4,6 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 import Config
+import CommandTree
 from Helpers.Logger import Logger
 from NSOAuth.VersionManager import VersionManager
 
@@ -19,15 +20,15 @@ def main():
     with Session(engine) as session:
         logger.log("Attempting to get application newest versions...")
         if VersionManager(session).updateVersions():
-            logger.log("Got the latest versions.")
+            logger.log("Got the latest versions!")
         else:
             logger.warn("Failed to get the latest versions.")
    
-    for command in Config.INDEPENDENT:
+    for command in CommandTree.INDEPENDENT:
         command.register(bot, engine)
     
-    for group in Config.GROUPS:
-        currGroup = Config.GROUPS[group]
+    for group in CommandTree.GROUPS:
+        currGroup = CommandTree.GROUPS[group]
         slashGroup = bot.create_group(
             group,
             currGroup["description"],
@@ -41,6 +42,8 @@ def main():
     async def on_ready():
         logger.log(f"Connected to {bot.user}!")
 
+
+    logger.log("Logging into Discord...")
     bot.run(environ["DiscordBotToken"])
 
 
