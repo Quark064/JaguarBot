@@ -5,7 +5,7 @@ SERVER_VERSION = "0.0.1"
 DATABASE_PATH = "Database"
 DATABASE_NAME = "UserDB.sqlite"
 
-F_ENDPOINT = "https://nxapi-znca-api.fancy.org.uk/api/znca/f"
+F_ENDPOINT = "https://api.imink.app/f"
 
 class EXP_OFFSET:
     SESSION = 63072000
@@ -16,8 +16,14 @@ class EXP_OFFSET:
 INFO_EMBED_COLOR = (0, 255, 255)
 
 class DISCORD_EMOJI:
-    ANARCHY        = "<:Anarchy:1113707391234609222>"
+    ANARCHY        = "<:Anarchy:1114048656664969297>"
     PRIVATE_BATTLE = "<:PrivateBattle:1113707393923170325>"
     SALMON_RUN     = "<:SalmonRun:1113707388315390033>"
     TURF_WAR       = "<:TurfWar:1113707389393309726>"
     X_BATTLE       = "<:XBattle:1113707385949802596>"
+    TABLE_TURF     = "<:TableTurf:1113988397443338240> "
+    BIG_RUN        = "<:BigRun:1113987978642071652>"
+    EGGSTRA_WORK   = "<:EggstraWork:1113987981586468944>"
+    SPLATFEST      = "<:Splatfest:1114013240381423659>"
+    LEAGUE         = "<:League:1114015438918135829>"
+    JOINABLE       = "<:Joinable:1114043590776201226>"

@@ -1,6 +1,7 @@
 from time import time
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
 from Database.Models import User, Token, GraphQLQuery, TokenType
 
 

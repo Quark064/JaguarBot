@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from typing import Tuple
 
 from Database.Models import User
 from NSOAuth.GraphQL.GQLRequest import GQLRequest
@@ -12,8 +13,8 @@ class FriendListQuery(GQLRequest):
 
         super().__init__(dbSession, user)
 
-    def getPlayingFriends(self) -> list:
-        """ Returns the first MAX_PLAYERS players currently in game. """
+    def getPlayingFriends(self) -> Tuple[int, list]:
+        """ Returns the number and first MAX_PLAYERS players currently in game. """
         
         friendList = self.gqlResult['data']['friends']['nodes']
         
@@ -25,4 +26,4 @@ class FriendListQuery(GQLRequest):
             else:
                 break
         
-        return onlineFriends[0:self.MAX_PLAYERS]
+        return (len(onlineFriends), onlineFriends[0:self.MAX_PLAYERS])

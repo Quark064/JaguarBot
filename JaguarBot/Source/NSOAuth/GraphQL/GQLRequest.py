@@ -26,27 +26,35 @@ class GQLRequest:
         self.fAbs = FindAbstractor(self.dbSession)
         self.vManager = VersionManager(self.dbSession)
 
+    async def refreshTokens(self, user: User) -> bool|None:
+        """ Attempts to refresh invalid tokens.
+            Returns True if the tokens were updated, False if they failed to update,
+            and returns None if the tokens were not expired. """
+        
+        gToken = self.fAbs.getToken(user, TokenType.GAME_WEB)
+        bToken = self.fAbs.getToken(user, TokenType.BULLET)
+
+        if self.fAbs.isTokenExpired(gToken):
+            return await RefreshManager.refreshGameWeb(self.dbSession, user)
+        
+        if self.fAbs.isTokenExpired(bToken):
+            if not await RefreshManager.refreshBullet(self.dbSession, user):
+                return await RefreshManager.refreshGameWeb(self.dbSession, user)
     
+
     async def sendGQLRequest(self, **kwargs) -> bool:
         """ Sends the GraphQL Request to the server. Returns bool if it was successful."""
 
+        # Refresh known expired tokens
+        status = await self.refreshTokens(self.user)
+        if status != None:
+            if status:
+                self.logger.log(f"Refreshed tokens for User {self.user.discordID}")
+            else:
+                self.logger.warn(f"Failed to refresh tokens for User {self.user.discordID}!")
+
         gToken = self.fAbs.getToken(self.user, TokenType.GAME_WEB)
         bToken = self.fAbs.getToken(self.user, TokenType.BULLET)
-
-        # Refresh known expired tokens
-        if self.fAbs.isTokenExpired(bToken):
-            if self.fAbs.isTokenExpired(gToken):
-                if await RefreshManager.refreshGameWeb(self.dbSession, self.user):
-                    self.logger.log(f"Refreshed GameWeb and Bullet Tokens for User {self.user.discordID}")
-                else:
-                    self.logger.warn(f"Failed to refresh GameWeb and Bullet tokens for User {self.user.discordID}")
-                    return False
-            else:
-                if await RefreshManager.refreshBullet(self.dbSession, self.user):
-                    self.logger.log(f"Refreshed Bullet Token for User {self.user.discordID}")
-                else:
-                    self.logger.warn(f"Failed to refresh Bullet token for User {self.user.discordID}")
-                    return False
         
         header = {
             'Authorization':    f'Bearer {bToken.value}',

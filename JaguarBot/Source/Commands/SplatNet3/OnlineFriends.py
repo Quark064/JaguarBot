@@ -38,22 +38,55 @@ class OnlineFriends(ICommand):
                 await ctx.followup.send(content="Failed to get friends from the server.")
                 return
             
-            onlineFriends = friendQuery.getPlayingFriends()
+            numFriendsOnline, onlineFriends = friendQuery.getPlayingFriends()
             if not onlineFriends:
                 await ctx.followup.send(content="No friends are currently playing.")
                 return
             
             embedFields = []
-            for player in onlineFriends:
-                if not player["vsMode"]:
-                    embedFields.append(EmbedField(player["playerName"], f"{player['onlineState']} - {DISCORD_EMOJI.SALMON_RUN}"))
+            for player in onlineFriends:                
+                if player["coopRule"]:
+                    match(player["coopRule"]):
+                        case "BIG_RUN":
+                            mode  = "Big Run"
+                            emoji = DISCORD_EMOJI.BIG_RUN
+                        case "TEAM_CONTEST":
+                            mode = "Eggstra Work"
+                            emoji = DISCORD_EMOJI.EGGSTRA_WORK
+                        case _:
+                            mode = "Salmon Run"
+                            emoji = DISCORD_EMOJI.SALMON_RUN
+
+                elif player["vsMode"]:
+                    mode = player["vsMode"]["name"]
+                    match(player["vsMode"]["mode"]):
+                        case "BANKARA":
+                            emoji = DISCORD_EMOJI.ANARCHY
+                        case "FEST":
+                            emoji = DISCORD_EMOJI.SPLATFEST
+                        case "LEAGUE":
+                            emoji = DISCORD_EMOJI.LEAGUE
+                        case "PRIVATE":
+                            emoji = DISCORD_EMOJI.PRIVATE_BATTLE
+                        case "REGULAR":
+                            emoji = DISCORD_EMOJI.TURF_WAR
+                            mode  = "Turf War"
+                        case "X_MATCH":
+                            emoji = DISCORD_EMOJI.X_BATTLE
+                
                 else:
-                    embedFields.append(EmbedField(player["playerName"], f"{player['vsMode']['name']} - {DISCORD_EMOJI.ANARCHY}"))
-            
+                    continue
+
+                nameStr = f"{emoji} {player['playerName']} {':lock:' if player['isLocked'] else ''}"
+
+                embedFields.append(EmbedField(nameStr, mode))
+
             outputEmbed = Embed(
-                title  = f"Currently Playing Friends: {len(onlineFriends)}",
+                title  = f"Currently Playing Friends: {numFriendsOnline}",
                 color  = Colour.from_rgb(*INFO_EMBED_COLOR),
                 fields = embedFields
             )
+
+            outputEmbed.set_footer(text=f"{len(onlineFriends)} of {numFriendsOnline} displayed.")
             
             await ctx.followup.send(embed=outputEmbed)

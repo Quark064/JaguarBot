@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from enum import IntEnum
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import select
 
@@ -28,6 +28,7 @@ class User(Base):
     discordID: Mapped[int]
     language: Mapped[str] = mapped_column(String(7))
     country: Mapped[str] = mapped_column(String(7))
+    pfpURL: Mapped[Optional[str]] = mapped_column(String(100))
 
     tokens: Mapped[List["Token"]] = relationship(backref="user", uselist=True)
 

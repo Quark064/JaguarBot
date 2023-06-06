@@ -8,6 +8,7 @@ from re import search
 from json import loads, dumps
 from enum import Enum, IntEnum, auto
 from dataclasses import dataclass
+from copy import copy
 from typing import Self
 from NSOAuth.VersionManager import VersionInfo
 
@@ -82,6 +83,7 @@ class NinUserResult(TKResult):
     accountID:   str
     idToken:     str
     accessToken: str
+    cached:      bool
 
 @dataclass(init=False)
 class FToken(TKResult):
@@ -106,6 +108,8 @@ class TokenManager:
     # Public Methods ----------
     def __init__(self, verInfo: VersionInfo) -> None:
         self.verInfo = verInfo
+    
+        self.cachedNinUserInfo = None
 
 
     async def generateNSOLoginLink(self) -> AuthURLResult:
@@ -215,10 +219,12 @@ class TokenManager:
         return self.__getBulletToken(ninUserInfo, gToken)
         
 
-    @staticmethod
-    async def getNintendoUserInfo(sessionToken: str) -> NinUserResult:
+    async def getNintendoUserInfo(self, sessionToken: str, useCachedResult: bool = True) -> NinUserResult:
         """ Request a user's information with their Session Token. """
 
+        if self.cachedNinUserInfo and useCachedResult:
+            return self.cachedNinUserInfo
+        
         ninUser = NinUserResult()
 
         appHead = {
@@ -276,7 +282,14 @@ class TokenManager:
         except Exception:
             return NinUserResult().statusError(TKError.GET_FAILURE, "Unable to get Nintendo User Info.")
         
-        return ninUser.statusOK()
+        okResult = ninUser.statusOK()
+        okResult.cached = False
+        
+        cachedCopy = copy(okResult)
+        cachedCopy.cached = True
+        self.cachedNinUserInfo = cachedCopy
+
+        return okResult
 
 
     # Private Helper Methods ----
